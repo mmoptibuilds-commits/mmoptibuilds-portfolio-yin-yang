@@ -13,3 +13,7 @@ test-results/
 
 # local spec extract (downloaded reference)
 .spec/
+
+# typescript build artifacts
+*.tsbuildinfo
+next-env.d.ts

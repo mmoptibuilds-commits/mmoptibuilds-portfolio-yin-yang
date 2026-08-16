@@ -1,0 +1,348 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   mmoptibuilds token system
+
+   Concept: nothing is on a shelf; every build starts as a specification.
+   Two divisions annotate two different materials with the same deep
+   structure. Systems annotates with instrument datum lines. Studio
+   annotates with editorial margin notes.
+
+   Semantic token NAMES are shared so behaviour components stay division
+   agnostic. Token VALUES are redefined by .division-systems /
+   .division-studio, so `bg-surface text-ink` renders the correct material
+   without duplicating a component per division.
+   ========================================================================== */
+
+@theme inline {
+  /* Materials — resolved per division scope, never used raw */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-border-control: var(--border-control);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-signal: var(--signal);
+
+  --font-display: var(--font-display-stack);
+  --font-text: var(--font-text-stack);
+  --font-annotation: var(--font-annotation-stack);
+
+  /* Fluid type scale. Steps are shared; each division picks the steps and
+     tracking that suit its display face. */
+  --text-step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.83rem);
+  --text-step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.03rem);
+  --text-step-1: clamp(1.1rem, 1.04rem + 0.3vw, 1.3rem);
+  --text-step-2: clamp(1.32rem, 1.2rem + 0.6vw, 1.7rem);
+  --text-step-3: clamp(1.6rem, 1.36rem + 1.15vw, 2.3rem);
+  --text-step-4: clamp(1.95rem, 1.5rem + 2.2vw, 3.2rem);
+  --text-step-5: clamp(2.35rem, 1.6rem + 3.7vw, 4.5rem);
+  --text-step-6: clamp(2.8rem, 1.5rem + 6.3vw, 6.5rem);
+  --text-step-7: clamp(3.2rem, 1rem + 10.5vw, 9.5rem);
+
+  /* Motion — three tiers. Micro settles state, interface moves objects,
+     cinematic is rare and timeline driven. */
+  --ease-mech: cubic-bezier(0.2, 0, 0, 1);
+  --ease-editorial: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --duration-micro: 140ms;
+  --duration-micro-lg: 220ms;
+  --duration-ui: 380ms;
+  --duration-ui-lg: 620ms;
+  --duration-cine: 1100ms;
+
+  /* Layout */
+  --spacing-gutter: clamp(1.25rem, 0.9rem + 2.2vw, 2.75rem);
+  --spacing-bleed: clamp(1.25rem, 0.5rem + 4vw, 5rem);
+  --container-measure: 68ch;
+  --container-measure-tight: 54ch;
+}
+
+/* ── Systems: engineered, calm, exact, physically grounded ───────────────── */
+.division-systems {
+  --surface: #0b0c0d;
+  --surface-raised: #14161a;
+  --surface-sunken: #060708;
+  --ink: #edeff1; /* 15.6:1 on surface */
+  --ink-muted: #9ba3aa; /*  7.4:1 on surface */
+  --ink-faint: #737b81; /*  4.6:1 — non-essential only */
+  --rule: #23262a; /* decorative datum line — must stay quiet */
+  --rule-strong: #363b41; /* decorative emphasis only */
+  --border-control: #5f676d; /* interactive boundaries — WCAG 1.4.11 */
+  --accent: #2fd8e4; /* interaction and active state only */
+  --accent-strong: #6ceaf2;
+  --accent-contrast: #04191c; /* ink on an accent fill */
+  --signal: #46d97f; /* confirmed status only */
+  --metal: #b8a88f; /* warm hairline annotation */
+
+  --font-display-stack: var(--font-systems-display), ui-monospace, monospace;
+  --font-text-stack: var(--font-systems-text), ui-sans-serif, system-ui, sans-serif;
+  --font-annotation-stack: var(--font-systems-display), ui-monospace, monospace;
+
+  --radius-surface: 2px;
+  color-scheme: dark;
+}
+
+/* ── Studio: editorial, inventive, assured, human ────────────────────────── */
+.division-studio {
+  --surface: #f4efe6;
+  --surface-raised: #fbf8f2;
+  --surface-sunken: #e7e0d3;
+  --ink: #16130f; /* 16.4:1 on surface */
+  --ink-muted: #55504a; /*  7.2:1 on surface */
+  --ink-faint: #7d766d; /*  4.6:1 — non-essential only */
+  --rule: #d8cfbf; /* decorative margin rule — must stay quiet */
+  --rule-strong: #b8ad9a; /* decorative emphasis only */
+  --border-control: #8a8276; /* interactive boundaries — WCAG 1.4.11 */
+  --accent: #b8371a; /* 5.1:1 on surface — safe for text */
+  --accent-strong: #d2461f; /* large display and fills only */
+  --accent-contrast: #fdf9f3;
+  --signal: #2f6d4a;
+
+  --font-display-stack: var(--font-studio-display), ui-serif, Georgia, serif;
+  --font-text-stack: var(--font-studio-text), ui-sans-serif, system-ui, sans-serif;
+  --font-annotation-stack: var(--font-studio-text), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-surface: 0px;
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  /* Anchor targets clear the fixed division bar. */
+  :target {
+    scroll-margin-top: 6rem;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-text-stack);
+    font-size: var(--text-step-0);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* One focus treatment everywhere. Never removed, always on the material. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  /* Tabular figures are mandatory wherever a number is a specification. */
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion
+
+   Per spec 15: preserve hierarchy, continuity and comprehension. Reveals
+   still resolve — they resolve instantly rather than translating. Anything
+   purely spatial or looping stops.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Content that JS would have revealed must never stay hidden. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  [data-motion-loop] {
+    display: none !important;
+  }
+}
+
+/* Elements the reveal system will animate start hidden only when we know JS
+   is running, so a failed hydration can never hide content. */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-js="on"] [data-reveal="pending"] {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+@utility measure {
+  max-width: var(--container-measure);
+}
+
+@utility measure-tight {
+  max-width: var(--container-measure-tight);
+}
+
+/* Instrument label: the Systems annotation voice. */
+@utility label-instrument {
+  font-family: var(--font-annotation-stack);
+  font-size: var(--text-step--1);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Margin note: the Studio annotation voice. */
+@utility note-margin {
+  font-family: var(--font-annotation-stack);
+  font-size: var(--text-step--1);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--ink-muted);
+}
+
+/* ==========================================================================
+   Gateway
+
+   The headline crosses the seam between the two division materials. A single
+   H1 is painted with a hard-stop gradient clipped to the glyphs so the left
+   half reads as Systems ink and the right half as Studio ink. One element,
+   one accessible name, no duplicated text.
+   ========================================================================== */
+
+.gateway-headline {
+  /* Mobile stacks the materials vertically and the headline sits wholly
+     inside the Systems half, so it is simply Systems ink. */
+  color: #edeff1;
+}
+
+.gateway-headline-quiet {
+  color: #9ba3aa;
+}
+
+@media (min-width: 48rem) {
+  .gateway-headline {
+    /* The H1 box spans the viewport, so 50% of the box is exactly the seam. */
+    background-image: linear-gradient(
+      to right,
+      #edeff1 0 50%,
+      #16130f 50% 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gateway-headline-quiet {
+    color: transparent;
+  }
+}
+
+/* Windows High Contrast and other forced-colours modes discard background
+   images, which would leave transparent text invisible. Opt out entirely. */
+@media (forced-colors: active) {
+  .gateway-headline,
+  .gateway-headline-quiet {
+    background-image: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+  }
+}
+
+/* The seam draws itself once on load: cinematic tier, transform only, and
+   never on the LCP element. CSS-only — this needs no JavaScript. */
+@media (prefers-reduced-motion: no-preference) {
+  .gateway-seam {
+    animation: gateway-seam-draw var(--duration-cine) var(--ease-out-expo) both;
+  }
+}
+
+@keyframes gateway-seam-draw {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
