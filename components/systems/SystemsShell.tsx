@@ -22,11 +22,11 @@ export function SystemsShell({ children }: { children: React.ReactNode }) {
             <Mark />
             <span
               aria-hidden="true"
-              className="hidden h-4 w-px bg-rule-strong md:block"
+              className="hidden h-4 w-px bg-rule-strong lg:block"
             />
             <Link
               href="/systems"
-              className="label-instrument hidden text-ink transition-colors duration-(--duration-micro) hover:text-accent md:block"
+              className="label-instrument hidden text-ink transition-colors duration-(--duration-micro) hover:text-accent lg:block"
             >
               Systems
             </Link>
@@ -38,14 +38,14 @@ export function SystemsShell({ children }: { children: React.ReactNode }) {
             {/* Discreet sibling-division switcher, per the IA in spec 05. */}
             <Link
               href={divisions.studio.href}
-              className="label-instrument hidden min-h-11 items-center border-l border-rule pl-4 text-ink-faint transition-colors duration-(--duration-micro) hover:text-ink md:flex"
+              className="label-instrument hidden min-h-11 items-center border-l border-rule pl-4 text-ink-faint transition-colors duration-(--duration-micro) hover:text-ink lg:flex"
             >
               Studio&nbsp;&rarr;
             </Link>
 
             <Link
               href="/contact"
-              className="label-instrument hidden min-h-11 items-center bg-accent px-4 text-accent-contrast transition-colors duration-(--duration-micro) hover:bg-accent-strong md:flex"
+              className="label-instrument hidden min-h-11 items-center bg-accent px-4 text-accent-contrast transition-colors duration-(--duration-micro) hover:bg-accent-strong lg:flex"
             >
               Enquire
             </Link>

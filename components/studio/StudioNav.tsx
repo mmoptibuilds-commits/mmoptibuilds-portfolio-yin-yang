@@ -16,7 +16,7 @@ export function StudioNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Studio" className="hidden md:block">
+    <nav aria-label="Studio" className="hidden lg:block">
       <ul className="flex items-stretch gap-1">
         {studioNav.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);

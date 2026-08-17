@@ -16,10 +16,10 @@ export function StudioShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between gap-4 px-(--spacing-gutter) py-3">
           <div className="flex items-center gap-5">
             <Mark />
-            <span aria-hidden="true" className="hidden h-4 w-px bg-rule-strong md:block" />
+            <span aria-hidden="true" className="hidden h-4 w-px bg-rule-strong lg:block" />
             <Link
               href="/studio"
-              className="hidden font-display text-step-1 text-ink transition-colors duration-(--duration-micro) hover:text-accent md:block"
+              className="hidden font-display text-step-1 text-ink transition-colors duration-(--duration-micro) hover:text-accent lg:block"
             >
               Studio
             </Link>
@@ -30,14 +30,14 @@ export function StudioShell({ children }: { children: React.ReactNode }) {
 
             <Link
               href={divisions.systems.href}
-              className="hidden min-h-11 items-center border-l border-rule pl-4 text-step--1 text-ink-faint transition-colors duration-(--duration-micro) hover:text-ink md:flex"
+              className="hidden min-h-11 items-center border-l border-rule pl-4 text-step--1 text-ink-faint transition-colors duration-(--duration-micro) hover:text-ink lg:flex"
             >
               Systems&nbsp;&rarr;
             </Link>
 
             <Link
               href="/contact"
-              className="hidden min-h-11 items-center bg-accent px-4 text-step-0 font-medium text-accent-contrast transition-colors duration-(--duration-micro) hover:bg-accent-strong md:flex"
+              className="hidden min-h-11 items-center bg-accent px-4 text-step-0 font-medium text-accent-contrast transition-colors duration-(--duration-micro) hover:bg-accent-strong lg:flex"
             >
               Start a brief
             </Link>

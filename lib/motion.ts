@@ -3,11 +3,16 @@
  *
  * Three tiers, per spec 15 and the build directive:
  *   micro     80–250ms   state settles: hover, press, focus, toggle
- *   interface 250–700ms  objects move: menus, reveals, media transitions
- *   cinematic 700ms+     rare, timeline driven: the gateway sequence only
+ *   interface 250–700ms  objects move: menus, drawers, media transitions
+ *   cinematic 700ms+     rare, timeline driven
  *
  * Durations mirror the CSS custom properties in globals.css so a component
  * animating in JS and a sibling animating in CSS stay in sync.
+ *
+ * Section reveals are deliberately NOT here. They are CSS-only, driven by a
+ * scroll-driven timeline on `[data-reveal]`, and animate transform without
+ * opacity so that content is never hidden by an animation that fails to run.
+ * See components/shared/Reveal.tsx.
  */
 
 export const duration = {
@@ -28,21 +33,3 @@ export const ease = {
   outExpo: [0.16, 1, 0.3, 1],
   inOut: [0.65, 0, 0.35, 1],
 } as const;
-
-/**
- * Standard reveal. Content is already in the DOM and already readable; this
- * only resolves its arrival. Reduced motion is handled in CSS so that a
- * hydration failure can never leave content hidden.
- */
-export const reveal = {
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: duration.uiLg, ease: ease.outExpo },
-} as const;
-
-/** Staggered children. Keep stagger tight; long cascades read as slow. */
-export function stagger(index: number, step = 0.055) {
-  return { ...reveal.transition, delay: index * step };
-}
-
-export const viewportOnce = { once: true, amount: 0.35 } as const;

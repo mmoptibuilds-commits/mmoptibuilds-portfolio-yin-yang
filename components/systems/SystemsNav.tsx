@@ -16,7 +16,7 @@ export function SystemsNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Systems" className="hidden md:block">
+    <nav aria-label="Systems" className="hidden lg:block">
       <ul className="flex items-stretch">
         {systemsNav.map((item) => {
           const active = pathname === item.href;

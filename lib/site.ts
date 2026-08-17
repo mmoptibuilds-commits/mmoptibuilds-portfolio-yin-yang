@@ -60,4 +60,4 @@ export type DivisionKey = keyof typeof divisions;
  * whenever the privacy notice changes materially; stored submissions keep
  * the version that was actually shown to the visitor.
  */
-export const CONSENT_VERSION = "2026-08-1";
+export const CONSENT_VERSION = "2026-08-17";

@@ -35,16 +35,24 @@
   --font-annotation: var(--font-annotation-stack);
 
   /* Fluid type scale. Steps are shared; each division picks the steps and
-     tracking that suit its display face. */
+     tracking that suit its display face.
+
+     The minimums of the top three steps are set by the WIDEST display face,
+     which is Systems' monospace: mono advance is ~0.6em per glyph, so a
+     13-character word at step-6 must still fit inside a 320px viewport's
+     content box (~277px). That is what caps step-6's minimum at 2.2rem.
+     Studio's serif is narrower and simply reads slightly smaller at the same
+     step, which is correct — a serif at a given pixel size looks smaller than
+     a mono at the same size. */
   --text-step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.83rem);
   --text-step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.03rem);
   --text-step-1: clamp(1.1rem, 1.04rem + 0.3vw, 1.3rem);
   --text-step-2: clamp(1.32rem, 1.2rem + 0.6vw, 1.7rem);
-  --text-step-3: clamp(1.6rem, 1.36rem + 1.15vw, 2.3rem);
-  --text-step-4: clamp(1.95rem, 1.5rem + 2.2vw, 3.2rem);
-  --text-step-5: clamp(2.35rem, 1.6rem + 3.7vw, 4.5rem);
-  --text-step-6: clamp(2.8rem, 1.5rem + 6.3vw, 6.5rem);
-  --text-step-7: clamp(3.2rem, 1rem + 10.5vw, 9.5rem);
+  --text-step-3: clamp(1.55rem, 1.36rem + 1.15vw, 2.3rem);
+  --text-step-4: clamp(1.8rem, 1.5rem + 2.2vw, 3.2rem);
+  --text-step-5: clamp(2.05rem, 1.6rem + 3.7vw, 4.5rem);
+  --text-step-6: clamp(2.2rem, 1.5rem + 6.3vw, 6.5rem);
+  --text-step-7: clamp(2.4rem, 1rem + 10.5vw, 9.5rem);
 
   /* Motion — three tiers. Micro settles state, interface moves objects,
      cinematic is rare and timeline driven. */
@@ -66,6 +74,21 @@
   --container-measure-tight: 54ch;
 }
 
+/* A division scope declares its own material.
+   Redefining --ink alone is not enough: `color` and `font-family` are
+   inherited as COMPUTED values, and the stacks they reference are declared on
+   this scope rather than on :root. Set on <body>, `var(--font-text-stack)`
+   would be unresolvable and silently fall back to the default sans — which is
+   exactly the bug this fixes. Each scope therefore re-applies both properties
+   from its own tokens, which is also what lets a Studio panel sit inside a
+   Systems page. Background is not set here — components opt in with
+   `bg-surface` where they want the material. */
+.division-systems,
+.division-studio {
+  color: var(--ink);
+  font-family: var(--font-text-stack);
+}
+
 /* ── Systems: engineered, calm, exact, physically grounded ───────────────── */
 .division-systems {
   --surface: #0b0c0d;
@@ -73,7 +96,13 @@
   --surface-sunken: #060708;
   --ink: #edeff1; /* 15.6:1 on surface */
   --ink-muted: #9ba3aa; /*  7.4:1 on surface */
-  --ink-faint: #737b81; /*  4.6:1 — non-essential only */
+  /* Contrast-checked against the WORST surface it appears on, which is
+     --surface-raised, not --surface. It is used for section labels, form
+     legends and "optional" markers — all real text — so it must clear 4.5:1
+     everywhere, not merely on the darkest background.
+       on #0b0c0d (surface)        5.4:1
+       on #14161a (surface-raised) 5.1:1  <- the binding constraint */
+  --ink-faint: #7f878d;
   --rule: #23262a; /* decorative datum line — must stay quiet */
   --rule-strong: #363b41; /* decorative emphasis only */
   --border-control: #5f676d; /* interactive boundaries — WCAG 1.4.11 */
@@ -98,7 +127,13 @@
   --surface-sunken: #e7e0d3;
   --ink: #16130f; /* 16.4:1 on surface */
   --ink-muted: #55504a; /*  7.2:1 on surface */
-  --ink-faint: #7d766d; /*  4.6:1 — non-essential only */
+  /* Contrast-checked against the DARKEST paper it appears on, which is
+     --surface-sunken (#e7e0d3). For dark ink, contrast falls as the background
+     darkens, so sunken — not raised — is the binding constraint.
+       on #fbf8f2 (surface-raised) 6.5:1
+       on #f4efe6 (surface)        6.0:1
+       on #e7e0d3 (surface-sunken) 5.2:1  <- the binding constraint */
+  --ink-faint: #5f5a52;
   --rule: #d8cfbf; /* decorative margin rule — must stay quiet */
   --rule-strong: #b8ad9a; /* decorative emphasis only */
   --border-control: #8a8276; /* interactive boundaries — WCAG 1.4.11 */
@@ -139,8 +174,9 @@
   body {
     margin: 0;
     background-color: var(--surface);
-    color: var(--ink);
-    font-family: var(--font-text-stack);
+    /* Colour and font-family are deliberately NOT set here: the tokens they
+       would reference are declared on the division scopes below, so a
+       declaration at this level cannot resolve. See .division-* above. */
     font-size: var(--text-step-0);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -154,6 +190,10 @@
     margin: 0;
     font-weight: 400;
     text-wrap: balance;
+    /* Last-resort guard. The type scale is sized so real headings fit, but a
+       part number or URL in a heading must break rather than overflow the
+       viewport. Only applies to tokens with no break opportunity. */
+    overflow-wrap: break-word;
   }
 
   p {
@@ -242,11 +282,38 @@
   }
 }
 
-/* Elements the reveal system will animate start hidden only when we know JS
-   is running, so a failed hydration can never hide content. */
+/* Reveals are TRANSFORM-ONLY, deliberately.
+   An earlier version animated opacity from 0, which meant any element below
+   the fold was invisible until its scroll timeline resolved — blank in print,
+   blank in a full-page capture, blank if the timeline stalls. Because only
+   translate is animated, a reveal that never runs is indistinguishable from
+   a finished one apart from a 14px offset. Content is never unreadable. */
 @media (prefers-reduced-motion: no-preference) {
-  :root[data-js="on"] [data-reveal="pending"] {
-    opacity: 0;
+  @supports (animation-timeline: view()) {
+    [data-reveal] {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      /* Resolve early: complete well before the element reaches mid-screen. */
+      animation-range: entry 2% cover 22%;
+      animation-delay: calc(var(--reveal-i, 0) * -0.03s);
+      will-change: transform;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media print {
+  [data-reveal] {
+    animation: none !important;
+    transform: none !important;
   }
 }
 
@@ -279,6 +346,67 @@
   line-height: 1.45;
   letter-spacing: 0.01em;
   color: var(--ink-muted);
+}
+
+/* ==========================================================================
+   Mobile navigation sheet
+
+   A native <dialog> renders in the browser's top layer, which changes how it
+   is painted and stacked but not where it sits in the DOM — so it still
+   inherits custom properties and colour from its .division-* ancestor, and
+   `bg-surface text-ink` resolve to the right material with no extra scope.
+
+   Only layout, backdrop and motion belong here; colour comes from tokens.
+   ========================================================================== */
+
+.mobile-sheet {
+  /* A dialog is width:fit-content and centred by default; this is a sheet. */
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  border-width: 0 0 1px 0;
+}
+
+.mobile-sheet::backdrop {
+  background-color: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(2px);
+}
+
+/* Scroll lock, without JavaScript. While any modal sheet is open the page
+   behind it must not scroll; :has() makes this a single declarative rule
+   instead of a body-class effect that can leak if a render is interrupted. */
+html:has(dialog[open].mobile-sheet) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-sheet[open] {
+    animation: sheet-in var(--duration-ui) var(--ease-mech) both;
+  }
+
+  .mobile-sheet[open]::backdrop {
+    animation: backdrop-in var(--duration-ui) linear both;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ==========================================================================
@@ -326,6 +454,29 @@
     background-image: none;
     color: CanvasText;
     -webkit-text-fill-color: CanvasText;
+  }
+}
+
+/* Utility chrome on the gateway straddles the seam: the mark sits over the
+   Systems half, the enquiry link over the Studio half. Rather than duplicate
+   the link into two breakpoint-specific copies (which would read twice to a
+   screen reader), it simply adopts the ink of whichever material is beneath
+   it — mobile stacks the materials, so there it is Systems ink. */
+.gateway-utility {
+  color: #edeff1;
+}
+
+.gateway-utility:hover {
+  color: #2fd8e4;
+}
+
+@media (min-width: 48rem) {
+  .gateway-utility {
+    color: #16130f;
+  }
+
+  .gateway-utility:hover {
+    color: #b8371a;
   }
 }
 

@@ -17,3 +17,10 @@ test-results/
 # typescript build artifacts
 *.tsbuildinfo
 next-env.d.ts
+
+screenshots/
+
+# Local enquiry store (file backend). Contains personal data — never commit.
+.enquiries/
+
+.env*.local

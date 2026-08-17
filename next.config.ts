@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  // Keeps the dev-tools badge out of visual-review screenshots. Has no
+  // effect on production output.
+  devIndicators: false,
+
   // Pin the workspace root. A stray lockfile in a parent directory otherwise
   // makes Turbopack guess, and the guess is not stable across machines.
   turbopack: { root: import.meta.dirname },

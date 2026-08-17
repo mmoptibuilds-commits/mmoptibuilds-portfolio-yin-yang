@@ -1,5 +1,5 @@
 import { StudioShell } from "@/components/studio/StudioShell";
-import { studioFontClass } from "@/lib/fonts";
+import { studioFontClass } from "@/lib/fonts-studio";
 
 export default function StudioLayout({ children }: { children: React.ReactNode }) {
   return (

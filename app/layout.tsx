@@ -40,16 +40,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-IN" suppressHydrationWarning>
       <head>
-        {/*
-          Marks the document as JS-capable before first paint. The reveal
-          system only hides content when this is set, so if JS fails or is
-          disabled every reveal renders visible instead of blank.
-        */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.dataset.js="on"`,
-          }}
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={jsonLd(organizationSchema())}

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { gatewayFontClass } from "@/lib/fonts";
+// The gateway is the one route that legitimately shows both materials side
+// by side, so it is the only place that loads all four families.
+import { systemsFontClass } from "@/lib/fonts-systems";
+import { studioFontClass } from "@/lib/fonts-studio";
 import { site, divisions } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 import { SkipLink } from "@/components/shared/SkipLink";
@@ -29,7 +32,9 @@ export const metadata: Metadata = pageMetadata({
  */
 export default function GatewayPage() {
   return (
-    <div className={`division-systems bg-surface text-ink ${gatewayFontClass}`}>
+    <div
+      className={`division-systems bg-surface text-ink ${systemsFontClass} ${studioFontClass}`}
+    >
       <SkipLink />
 
       {/* ── Hero: the diptych ─────────────────────────────────────────── */}
@@ -52,7 +57,7 @@ export default function GatewayPage() {
             <Mark />
             <Link
               href="/contact"
-              className="label-instrument min-h-11 content-center px-2 text-ink transition-colors duration-(--duration-micro) hover:text-accent"
+              className="gateway-utility label-instrument min-h-11 content-center px-2 transition-colors duration-(--duration-micro)"
             >
               Enquire
             </Link>
@@ -99,9 +104,11 @@ export default function GatewayPage() {
             <div>
               <h2
                 id="how-it-works"
-                className="font-display text-step-4 leading-[1.02] tracking-[-0.02em] text-balance uppercase"
+                className="font-display text-step-4 leading-[1.02] tracking-[-0.02em] uppercase [hyphens:none]"
               >
-                Nothing is pre-made
+                Nothing is{" "}
+                <br />
+                pre&#8288;-&#8288;made
               </h2>
               <p className="measure-tight mt-6 text-step-1 text-ink-muted">
                 Both divisions start the same way: with what you actually need,

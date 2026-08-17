@@ -1,55 +1,36 @@
-"use client";
-
-import { motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
-import { duration, ease, viewportOnce } from "@/lib/motion";
+import { cn } from "@/lib/cn";
 
 type RevealProps = {
-  children: ReactNode;
-  /** Stagger position within a group. */
+  children: React.ReactNode;
+  /**
+   * Stagger position within a row. Offsets the scroll range slightly so
+   * side-by-side items resolve in sequence rather than together.
+   */
   index?: number;
-  /** Distance travelled, in px. Keep small; large travel reads as cheap. */
-  distance?: number;
   as?: "div" | "li" | "section" | "article" | "header" | "figure";
   className?: string;
 };
 
 /**
- * The one reveal used across the site.
+ * The one reveal used across the site. A server component with no JavaScript.
  *
- * Content is server-rendered and present in the DOM regardless — this only
- * resolves its arrival. Under reduced motion the element renders in place
- * with no transform and no opacity ramp, so hierarchy and reading order
- * survive intact rather than the reveal being crudely stripped.
+ * Driven by a CSS scroll-driven animation (`animation-timeline: view()`).
+ * That matters for more than bundle size: an earlier version used
+ * `whileInView`, which server-rendered `opacity: 0` inline and only became
+ * visible after hydration — so on a slow connection, a JS error, or with
+ * scripting disabled, the copy stayed blank. Here the element is visible in
+ * the HTML by default and the animation is purely additive, applied only
+ * where it is supported and only when motion is welcome.
  */
-export function Reveal({
-  children,
-  index = 0,
-  distance = 14,
-  as = "div",
-  className,
-}: RevealProps) {
-  const reduced = useReducedMotion();
-  const MotionTag = motion[as];
-
-  if (reduced) {
-    const Tag = as;
-    return <Tag className={className}>{children}</Tag>;
-  }
-
+export function Reveal({ children, index = 0, as = "div", className }: RevealProps) {
+  const Tag = as;
   return (
-    <MotionTag
-      className={className}
-      initial={{ opacity: 0, y: distance }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={viewportOnce}
-      transition={{
-        duration: duration.uiLg,
-        ease: ease.outExpo,
-        delay: index * 0.055,
-      }}
+    <Tag
+      data-reveal=""
+      className={cn(className)}
+      style={index ? ({ "--reveal-i": index } as React.CSSProperties) : undefined}
     >
       {children}
-    </MotionTag>
+    </Tag>
   );
 }
