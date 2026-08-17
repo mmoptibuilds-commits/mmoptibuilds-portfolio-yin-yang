@@ -13,7 +13,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "check:a11y": "node scripts/a11y.mjs",
+    "check:keyboard": "node scripts/keyboard.mjs",
+    "check:responsive": "node scripts/shots.mjs",
+    "check:bundle": "node scripts/bundle.mjs",
+    "check:perf": "node scripts/perf.mjs",
+    "verify": "node scripts/verify.mjs",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
@@ -45,6 +50,7 @@
     "supabase": "^2.39.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.123.0"
   }
 }

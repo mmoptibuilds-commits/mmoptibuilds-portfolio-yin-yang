@@ -7,7 +7,7 @@ import {
   EnterpriseRfqForm,
   StudioBriefForm,
 } from "@/components/shared/forms";
-import { isEnquiryIntent, type EnquiryIntent } from "@/lib/enquiry-schema";
+import { isEnquiryIntent, type EnquiryIntent } from "@/lib/enquiry-fields";
 import { pageMetadata, jsonLd, breadcrumbSchema } from "@/lib/seo";
 import { systemsFontClass } from "@/lib/fonts-systems";
 import { studioFontClass } from "@/lib/fonts-studio";
@@ -53,6 +53,35 @@ const TABS: { intent: EnquiryIntent; label: string; blurb: string }[] = [
 ];
 
 type Props = { searchParams: Promise<{ intent?: string }> };
+
+/**
+ * The boundaries shown beside each form.
+ *
+ * These are the same limits stated on the division pages, repeated at the
+ * conversion moment because that is when they matter — spec 09 requires
+ * boundaries near the CTA. Nothing here promises a response time, because no
+ * response time can currently be met reliably.
+ */
+const BOUNDARIES: Record<EnquiryIntent, string[]> = {
+  "system-build": [
+    "No stock is held. Nothing is reserved by sending this.",
+    "No price is quoted before availability and warranty terms are confirmed.",
+    "No frame-rate or benchmark promise — that depends on your settings and drivers.",
+    "Your budget range stays private and is never published.",
+  ],
+  "enterprise-rfq": [
+    "Sourcing and delivery only. No installation, rack work or network configuration.",
+    "No availability or lead time is stated before a distributor confirms it.",
+    "Compatibility with equipment already in service is not guaranteed unless stated in writing.",
+    "Grey-market and parallel-import stock is not supplied.",
+  ],
+  "studio-brief": [
+    "No guaranteed ranking, traffic figure or conversion rate. Anyone promising those is guessing.",
+    "You keep your domain and hosting accounts. Deployment access is removed at handover.",
+    "30 days of bug fixes on reproducible defects; content changes are new scope.",
+    "If a smaller job would serve you better, that is what the reply will say.",
+  ],
+};
 
 export default async function ContactPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -102,7 +131,7 @@ export default async function ContactPage({ searchParams }: Props) {
       </header>
 
       <main id="main" className="px-(--spacing-gutter) py-14 md:py-20">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl">
           <h1
             className={cn(
               "max-w-[22ch] leading-[1.02] tracking-[-0.02em] text-balance",
@@ -166,18 +195,94 @@ export default async function ContactPage({ searchParams }: Props) {
             </ul>
           </nav>
 
-          {/* The form. `key` forces a fresh mount when the intent changes, so
-              no field state leaks between three structurally different forms. */}
-          <div className="mt-14 max-w-2xl">
-            {active === "system-build" ? (
-              <SystemBuildForm key="system-build" sourcePath="/contact" />
-            ) : null}
-            {active === "enterprise-rfq" ? (
-              <EnterpriseRfqForm key="enterprise-rfq" sourcePath="/contact" />
-            ) : null}
-            {active === "studio-brief" ? (
-              <StudioBriefForm key="studio-brief" sourcePath="/contact" />
-            ) : null}
+          {/* The form, with a sticky companion column.
+              The right column is not decoration filling a gap: spec 09 requires
+              boundaries stated near the CTA, and "what happens next" is the
+              question every visitor has at the moment of submitting. Keeping it
+              beside the form means it is readable while filling the fields in,
+              rather than buried below the button. */}
+          <div className="mt-14 grid gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,38rem)_minmax(0,20rem)]">
+            <div>
+              {active === "system-build" ? (
+                <SystemBuildForm key="system-build" sourcePath="/contact" />
+              ) : null}
+              {active === "enterprise-rfq" ? (
+                <EnterpriseRfqForm key="enterprise-rfq" sourcePath="/contact" />
+              ) : null}
+              {active === "studio-brief" ? (
+                <StudioBriefForm key="studio-brief" sourcePath="/contact" />
+              ) : null}
+            </div>
+
+            <aside
+              aria-labelledby="what-next"
+              className="flex flex-col gap-10 border-t border-rule pt-8 lg:sticky lg:top-8 lg:self-start lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10"
+            >
+              <div>
+                <h2
+                  id="what-next"
+                  className={cn(
+                    "text-ink-faint",
+                    isStudio
+                      ? "text-step--1 tracking-[0.08em] uppercase"
+                      : "label-instrument",
+                  )}
+                >
+                  What happens next
+                </h2>
+                <ol className="mt-5 flex flex-col gap-5">
+                  {[
+                    "You get a reference number on screen. Keep it — quote it if you follow up.",
+                    active === "studio-brief"
+                      ? "Your current site, your market and the scope get looked at properly."
+                      : "Availability, warranty terms, tax and delivery get confirmed with distributors.",
+                    "You get a reply by email, written by a person after that work is done.",
+                  ].map((line, i) => (
+                    <li key={line} className="flex gap-4">
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "shrink-0 text-accent",
+                          isStudio ? "text-step--1" : "label-instrument",
+                        )}
+                        data-numeric
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="text-step--1 leading-[1.6] text-ink-muted">
+                        {line}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="border-t border-rule pt-8">
+                <h2
+                  className={cn(
+                    "text-ink-faint",
+                    isStudio
+                      ? "text-step--1 tracking-[0.08em] uppercase"
+                      : "label-instrument",
+                  )}
+                >
+                  Worth knowing
+                </h2>
+                <ul className="mt-5 flex flex-col gap-3">
+                  {BOUNDARIES[active].map((line) => (
+                    <li key={line} className="flex gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2.5 h-px w-3 shrink-0 bg-rule-strong"
+                      />
+                      <span className="text-step--1 leading-[1.55] text-ink-muted">
+                        {line}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </aside>
           </div>
         </div>
       </main>

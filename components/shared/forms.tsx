@@ -9,7 +9,7 @@ import {
   TextArea,
   TextField,
 } from "@/components/shared/Field";
-import { BUDGET_LABELS, TIMING_LABELS } from "@/lib/enquiry-schema";
+import { BUDGET_LABELS, TIMING_LABELS } from "@/lib/enquiry-fields";
 
 const CONSENT =
   "I am happy for mmoptibuilds to store these details and reply to me by email about this enquiry.";

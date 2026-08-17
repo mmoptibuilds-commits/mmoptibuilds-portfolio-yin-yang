@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import type { Enquiry } from "./enquiry-schema";
-import { INTENT_DIVISION } from "./enquiry-schema";
+import { INTENT_DIVISION } from "./enquiry-fields";
 import { CONSENT_VERSION } from "./site";
 
 /**

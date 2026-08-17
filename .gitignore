@@ -24,3 +24,6 @@ screenshots/
 .enquiries/
 
 .env*.local
+
+# Downloaded roadmap specification package (source of truth, not source code)
+.spec/

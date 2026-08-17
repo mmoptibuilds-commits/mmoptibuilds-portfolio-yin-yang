@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUDGET_VALUES, TIMING_VALUES } from "./enquiry-fields";
 
 /**
  * Enquiry schemas — the single source of truth for all three intake forms.
@@ -6,6 +7,11 @@ import { z } from "zod";
  * The same schema object validates on the client (for inline messages) and on
  * the server (for actual trust). Client validation is a convenience; the
  * server never trusts it, per spec 13.
+ *
+ * Values, labels and intent mapping live in enquiry-fields.ts, which has no
+ * Zod dependency — the Client Component forms import from there so the
+ * validation library never reaches the browser. The enums below are built from
+ * those same arrays, so there is one source of truth.
  *
  * Field choices follow spec 13 exactly. Notably:
  *   - Budget is a RANGE, never a number, and "not-decided" is always valid.
@@ -34,30 +40,13 @@ const name = z
 const optionalText = (max: number) =>
   z.string().trim().max(max, `Please keep this under ${max} characters.`).optional().or(z.literal(""));
 
-const budgetRange = z.enum(
-  ["not-decided", "under-50k", "50k-100k", "100k-200k", "200k-500k", "over-500k"],
-  { message: "Pick a range, or say it is not decided." },
-);
-
-export const BUDGET_LABELS: Record<z.infer<typeof budgetRange>, string> = {
-  "not-decided": "Not decided yet",
-  "under-50k": "Under ₹50,000",
-  "50k-100k": "₹50,000 – ₹1,00,000",
-  "100k-200k": "₹1,00,000 – ₹2,00,000",
-  "200k-500k": "₹2,00,000 – ₹5,00,000",
-  "over-500k": "Over ₹5,00,000",
-};
-
-const timing = z.enum(["exploring", "1-month", "1-3-months", "3-plus-months"], {
-  message: "Roughly when would you want this?",
+const budgetRange = z.enum(BUDGET_VALUES, {
+  message: "Pick a range, or say it is not decided.",
 });
 
-export const TIMING_LABELS: Record<z.infer<typeof timing>, string> = {
-  exploring: "Just exploring",
-  "1-month": "Within a month",
-  "1-3-months": "One to three months",
-  "3-plus-months": "Three months or more",
-};
+const timing = z.enum(TIMING_VALUES, {
+  message: "Roughly when would you want this?",
+});
 
 /**
  * Anti-abuse fields, present on every form.
@@ -184,37 +173,20 @@ export const enquirySchema = z.discriminatedUnion("intent", [
 ]);
 
 export type Enquiry = z.infer<typeof enquirySchema>;
-export type EnquiryIntent = Enquiry["intent"];
 export type SystemBuildEnquiry = z.infer<typeof systemBuildSchema>;
 export type EnterpriseRfqEnquiry = z.infer<typeof enterpriseRfqSchema>;
 export type StudioBriefEnquiry = z.infer<typeof studioBriefSchema>;
 
-export const ENQUIRY_INTENTS = [
-  "system-build",
-  "enterprise-rfq",
-  "studio-brief",
-] as const satisfies readonly EnquiryIntent[];
-
-export function isEnquiryIntent(value: unknown): value is EnquiryIntent {
-  return typeof value === "string" && (ENQUIRY_INTENTS as readonly string[]).includes(value);
-}
-
-/** Which division each intent belongs to, for routing and dashboard filters. */
-export const INTENT_DIVISION: Record<EnquiryIntent, "systems" | "studio"> = {
-  "system-build": "systems",
-  "enterprise-rfq": "systems",
-  "studio-brief": "studio",
-};
-
-export const INTENT_LABELS: Record<EnquiryIntent, string> = {
-  "system-build": "System build",
-  "enterprise-rfq": "Enterprise RFQ",
-  "studio-brief": "Studio brief",
-};
-
-/**
- * Minimum time a human plausibly needs to complete a form, in milliseconds.
- * Anything faster is treated as automated. Kept low enough that a fast typist
- * using autofill is never rejected.
- */
-export const MIN_COMPLETION_MS = 2500;
+/* Intent helpers, labels and MIN_COMPLETION_MS are re-exported from
+   enquiry-fields so existing server-side imports keep working, while Client
+   Components import them directly from there and avoid pulling in Zod. */
+export {
+  ENQUIRY_INTENTS,
+  INTENT_DIVISION,
+  INTENT_LABELS,
+  BUDGET_LABELS,
+  TIMING_LABELS,
+  MIN_COMPLETION_MS,
+  isEnquiryIntent,
+} from "./enquiry-fields";
+export type { EnquiryIntent } from "./enquiry-fields";

@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { triageEnquiry, type TriageState } from "./actions";
-import { INTENT_LABELS, BUDGET_LABELS, TIMING_LABELS } from "@/lib/enquiry-schema";
+import { INTENT_LABELS, BUDGET_LABELS, TIMING_LABELS } from "@/lib/enquiry-fields";
 import { cn } from "@/lib/cn";
 import type { StoredRow } from "@/lib/enquiry-store";
 
