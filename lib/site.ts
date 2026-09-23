@@ -12,7 +12,7 @@ export const site = {
   brand: "mmoptibuilds",
   /** Used where a proper noun is required (schema.org, page titles). */
   legalDisplayName: "MMOptiBuilds",
-  url: "https://mmoptibuilds.com",
+  url: "https://www.mmoptibuilds.com",
   tagline: "Two kinds of technical work. One standard of care.",
   description:
     "mmoptibuilds sources computer systems around real workloads and builds websites around real business goals. Requirement-led hardware sourcing and conversion-focused web development, from Bengaluru.",
