@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { signIn, type SignInState } from "./actions";
+import { PasswordField } from "./PasswordField";
 import { cn } from "@/lib/cn";
 
 /**
@@ -54,19 +56,12 @@ export function SignInForm({ mode }: { mode: "supabase" | "dev" | "locked" }) {
         </p>
       )}
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="password" className="label-instrument text-ink-muted">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="min-h-11 border border-border-control bg-surface-raised px-3 text-step-0 text-ink"
-        />
-      </div>
+      <PasswordField
+        id="password"
+        name="password"
+        label="Password"
+        autoComplete="current-password"
+      />
 
       <button
         type="submit"
@@ -77,8 +72,17 @@ export function SignInForm({ mode }: { mode: "supabase" | "dev" | "locked" }) {
           "hover:bg-accent-strong disabled:cursor-progress disabled:opacity-70",
         )}
       >
-        {pending ? "Checking…" : "Sign in"}
+        {pending ? "Signing in…" : "Sign in"}
       </button>
+
+      {mode === "supabase" ? (
+        <Link
+          href="/admin/forgot-password"
+          className="label-instrument min-h-11 self-start py-3 text-ink-muted underline decoration-rule-strong underline-offset-4 transition-colors duration-(--duration-micro) hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Forgot your password?
+        </Link>
+      ) : null}
     </form>
   );
 }

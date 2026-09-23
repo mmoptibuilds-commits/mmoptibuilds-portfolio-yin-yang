@@ -46,7 +46,7 @@ npm run verify
 
 This is the important one. It runs nine gates in order: typecheck, lint, unit
 tests, production build, then boots a real production server and runs
-accessibility, keyboard/reduced-motion/no-JS, responsive (16 routes × 11
+accessibility, keyboard/reduced-motion/no-JS, responsive (19 routes × 11
 viewports), bundle budget and Core Web Vitals against it. It exits non-zero if
 anything fails, so CI can use it directly.
 
@@ -210,6 +210,17 @@ that table:
 insert into owner_accounts (user_id, label)
 values ('<your-auth-user-id>', 'founder');
 ```
+
+Owner sign-in includes password recovery. In Supabase Dashboard, open
+**Authentication → URL Configuration → Redirect URLs** and allow the exact
+callback URL for each environment:
+
+- Production: `https://www.mmoptibuilds.com/admin/auth/confirm`
+- Local development: `http://localhost:3000/admin/auth/confirm`
+
+The recovery email returns through this callback, verifies the one-use
+Supabase token, and opens the new-password form only for an account in
+`owner_accounts`. The sign-in page also has a password visibility toggle.
 
 ### Before going live
 

@@ -5,7 +5,8 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 
 const ROUTES = ["/", "/systems", "/systems/gaming-pcs", "/studio", "/studio/business-websites",
   "/studio/work", "/studio/work/coldharbour", "/about", "/about/story", "/contact",
-  "/contact?intent=studio-brief", "/privacy", "/terms", "/nope-404"];
+  "/contact?intent=studio-brief", "/privacy", "/terms", "/nope-404", "/admin",
+  "/admin/forgot-password", "/admin/reset-password"];
 
 const b = await chromium.launch();
 let totalViolations = 0;

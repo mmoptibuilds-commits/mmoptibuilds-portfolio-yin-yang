@@ -16,14 +16,14 @@ import { signOut } from "./actions";
  */
 export const dynamic = "force-dynamic";
 
-type Search = { status?: string; division?: string };
+type Search = { status?: string; division?: string; auth?: string };
 
 export default async function AdminPage({
   searchParams,
 }: {
   searchParams: Promise<Search>;
 }) {
-  const session = await getOwnerSession();
+  const [session, params] = await Promise.all([getOwnerSession(), searchParams]);
 
   if (!session) {
     return (
@@ -44,10 +44,15 @@ export default async function AdminPage({
             This area holds enquiry data. If you are not the owner, there is
             nothing here for you &mdash; the{" "}
             <Link href="/" className="text-ink underline decoration-accent underline-offset-4">
-              public site
+            public site
             </Link>{" "}
             is that way.
           </p>
+          {params.auth === "not-owner" ? (
+            <p role="alert" className="mt-6 max-w-sm border border-accent bg-surface-raised p-4 text-step-0 text-ink">
+              That account does not have owner access. Sign in with the owner account.
+            </p>
+          ) : null}
           <div className="mt-10">
             <SignInForm mode={authMode} />
           </div>
@@ -56,7 +61,6 @@ export default async function AdminPage({
     );
   }
 
-  const params = await searchParams;
   const all = await listEnquiries();
 
   const filtered = all.filter((row) => {

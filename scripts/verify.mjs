@@ -16,6 +16,11 @@ import { spawn } from "node:child_process";
 
 const PORT = Number(process.env.VERIFY_PORT ?? 3123);
 const BASE = `http://127.0.0.1:${PORT}`;
+const AUTH_TEST_ENV = {
+  NEXT_PUBLIC_SITE_URL: BASE,
+  NEXT_PUBLIC_SUPABASE_URL: "https://verification-only.supabase.co",
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_verification_only",
+};
 
 const ROUTES = [
   "home",
@@ -34,6 +39,9 @@ const ROUTES = [
   "contact",
   "privacy",
   "terms",
+  "admin",
+  "admin/forgot-password",
+  "admin/reset-password",
 ].join(",");
 
 const results = [];
@@ -119,7 +127,7 @@ console.log("── static gates ───────────────�
 await run("typecheck", "npx", ["tsc", "--noEmit"]);
 await run("lint", "npx", ["eslint", ".", "--max-warnings=0"]);
 await run("unit tests", "npx", ["vitest", "run"]);
-await run("production build", "npx", ["next", "build"]);
+await run("production build", "npx", ["next", "build"], AUTH_TEST_ENV);
 
 console.log("\n── booting production server ────────────────────────────────");
 
@@ -137,6 +145,7 @@ const server = spawn("npx", ["next", "start", "-H", "127.0.0.1", "-p", String(PO
   stdio: "ignore",
   shell: process.platform === "win32",
   detached: process.platform !== "win32",
+  env: { ...process.env, ...AUTH_TEST_ENV },
 });
 
 const up = await waitForServer();
@@ -148,7 +157,7 @@ if (!up) {
   console.log("\n── browser gates ────────────────────────────────────────────");
   await run("accessibility (axe + structure)", "node", ["scripts/a11y.mjs"], { BASE_URL: BASE });
   await run("keyboard / reduced motion / no-JS", "node", ["scripts/keyboard.mjs"], { BASE_URL: BASE });
-  await run("responsive (16 routes x 11 viewports)", "node", ["scripts/shots.mjs"], {
+  await run("responsive (19 routes x 11 viewports)", "node", ["scripts/shots.mjs"], {
     BASE_URL: BASE,
     ROUTES,
   });

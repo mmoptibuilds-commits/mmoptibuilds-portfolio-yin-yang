@@ -128,6 +128,43 @@ const fails = [];
   if (r.words < 300) fails.push(`no-JS: only ${r.words} words`);
 }
 
+// 6. Owner access: password visibility, recovery navigation and expired-link
+//    instructions all remain usable in the production build.
+{
+  const p = await (await b.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+  await p.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+
+  const password = p.locator("#password");
+  const show = p.getByRole("button", { name: "Show password" });
+  if ((await password.count()) !== 1 || (await show.count()) !== 1) {
+    fails.push("owner sign-in password control did not render");
+  } else {
+    await show.click();
+    if ((await password.getAttribute("type")) !== "text") {
+      fails.push("owner sign-in show-password control did not reveal the field");
+    }
+    await p.getByRole("button", { name: "Hide password" }).click();
+    if ((await password.getAttribute("type")) !== "password") {
+      fails.push("owner sign-in hide-password control did not conceal the field");
+    }
+  }
+
+  await p.getByRole("link", { name: "Forgot your password?" }).click();
+  await p.waitForURL("**/admin/forgot-password");
+  const recoveryEmail = p.locator("#recovery-email");
+  if ((await recoveryEmail.count()) !== 1) fails.push("recovery email form did not render");
+
+  await p.goto(`${BASE}/admin/reset-password`, { waitUntil: "networkidle" });
+  if (!(await p.getByRole("link", { name: "Request a new reset link" }).isVisible())) {
+    fails.push("reset page did not explain how to recover from a missing or expired session");
+  }
+  console.log("6. owner recovery:", JSON.stringify({
+    signInPassword: await password.getAttribute("type"),
+    recoveryEmail: (await recoveryEmail.count()) === 1,
+    expiredLinkHelp: await p.getByRole("link", { name: "Request a new reset link" }).isVisible(),
+  }));
+}
+
 await b.close();
-console.log(fails.length ? "\nFAILURES:\n" + fails.map(f => "  - " + f).join("\n") : "\nAll keyboard, motion and no-JS checks passed.");
+console.log(fails.length ? "\nFAILURES:\n" + fails.map(f => "  - " + f).join("\n") : "\nAll keyboard, motion, no-JS and owner recovery checks passed.");
 process.exitCode = fails.length ? 1 : 0;

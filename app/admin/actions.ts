@@ -8,9 +8,85 @@ import {
   getOwnerSession,
   getSupabaseServerClient,
 } from "@/lib/owner-auth";
+import { getOwnerRecoveryCallbackUrl } from "@/lib/auth-recovery";
 import { updateEnquiry } from "@/lib/enquiry-store";
 
 export type SignInState = { error?: string };
+export type PasswordResetRequestState = { sent?: boolean; error?: string };
+export type SetOwnerPasswordState = { error?: string };
+
+/**
+ * Start a password recovery email without revealing whether the address is
+ * registered. Supabase also responds successfully for unknown addresses.
+ */
+export async function requestPasswordReset(
+  _prev: PasswordResetRequestState,
+  formData: FormData,
+): Promise<PasswordResetRequestState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email || /\s/.test(email) || !email.includes("@")) {
+    return { error: "Enter a valid email address." };
+  }
+
+  if (authMode !== "supabase") {
+    return { error: "Password recovery is unavailable until Supabase Auth is configured." };
+  }
+
+  try {
+    const supabase = await getSupabaseServerClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: getOwnerRecoveryCallbackUrl(),
+    });
+
+    if (error) {
+      return {
+        error:
+          "We couldn’t start password recovery. Check the Supabase email and redirect settings, then try again.",
+      };
+    }
+  } catch {
+    return { error: "We couldn’t send the reset email. Please try again shortly." };
+  }
+
+  return { sent: true };
+}
+
+/** Update the password only from an active, allowlisted owner session. */
+export async function setOwnerPassword(
+  _prev: SetOwnerPasswordState,
+  formData: FormData,
+): Promise<SetOwnerPasswordState> {
+  if (authMode !== "supabase") {
+    return { error: "Password recovery is unavailable until Supabase Auth is configured." };
+  }
+
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  if (password.length < 12) {
+    return { error: "Choose a password with at least 12 characters." };
+  }
+  if (password !== confirmPassword) {
+    return { error: "The passwords do not match." };
+  }
+
+  try {
+    const session = await getOwnerSession();
+    if (!session || session.mode !== "supabase") {
+      return { error: "This reset link is invalid or expired. Request a new one." };
+    }
+
+    const supabase = await getSupabaseServerClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      return { error: "This reset link is invalid or expired. Request a new one." };
+    }
+  } catch {
+    return { error: "This reset link is invalid or expired. Request a new one." };
+  }
+
+  redirect("/admin");
+}
 
 /**
  * Owner sign-in.
