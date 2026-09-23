@@ -15,7 +15,7 @@ import { spawn } from "node:child_process";
  */
 
 const PORT = Number(process.env.VERIFY_PORT ?? 3123);
-const BASE = `http://localhost:${PORT}`;
+const BASE = `http://127.0.0.1:${PORT}`;
 
 const ROUTES = [
   "home",
@@ -133,7 +133,7 @@ if (!(await portIsFree(PORT))) {
   process.exit(1);
 }
 
-const server = spawn("npx", ["next", "start", "-p", String(PORT)], {
+const server = spawn("npx", ["next", "start", "-H", "127.0.0.1", "-p", String(PORT)], {
   stdio: "ignore",
   shell: process.platform === "win32",
   detached: process.platform !== "win32",

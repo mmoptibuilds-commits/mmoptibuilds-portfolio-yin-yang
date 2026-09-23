@@ -71,13 +71,11 @@ export async function getOwnerSession(): Promise<OwnerSession | null> {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
 
-  // Signed in is not the same as being the owner.
-  const { data: owner } = await supabase
-    .from("owner_accounts")
-    .select("user_id")
-    .eq("user_id", data.user.id)
-    .maybeSingle();
+  // Signed in is not the same as being the owner. `owner_accounts` has no
+  // client SELECT policy by design, so ask its SECURITY DEFINER allowlist
+  // function instead of opening the table to authenticated users.
+  const { data: isOwner, error: ownerError } = await supabase.rpc("is_owner");
+  if (ownerError || isOwner !== true) return null;
 
-  if (!owner) return null;
   return { email: data.user.email ?? "owner", mode: "supabase" };
 }
